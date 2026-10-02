@@ -1,0 +1,107 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Gradation0
+
+//@version=6
+indicator("Shift Zone Based", shorttitle = "SZB 45/55", overlay = true, precision = 5)
+
+
+rsi_len = input.int(7, "RSI length")
+upper_level = input.int(55, "Upper RSI Level", minval = 50)
+lower_level = input.int(45, "Lower RSI Level", maxval = 50)
+min_channel_len = input.int(9, "Minimal bars length of the channel")
+
+display_rsi_val = input.bool(false, "Display RSI Values at the Zones")
+
+upper_col = input.color(#21c997, "↑", inline = "colors")
+lower_col = input.color(#cc24e2, "↓", inline = "colors")
+
+var start = int(na)
+var trigger = false
+var float upper = na 
+var float lower = na
+var channel_color = color(na)
+color bar_color = na
+
+
+rsi = ta.rsi(close, rsi_len)
+
+channel_upper = ta.crossover(rsi, 70) and not trigger 
+channel_lower = ta.crossunder(rsi, 30) and not trigger 
+
+rsi_color = color.from_gradient(rsi, 30, 70, lower_col, upper_col)
+
+if channel_upper
+    label.new(bar_index, high, "Long", color = color.blue, size = size.small)
+
+    start := bar_index
+    trigger := true
+    upper := high
+    lower := low
+    channel_color := rsi_color
+    bar_color := rsi_color
+
+    if display_rsi_val
+        label.new(bar_index, hl2, "RSI: " + str.tostring(upper_level), style = label.style_label_right, color = color.new(rsi_color, 100), textcolor = chart.fg_color, force_overlay = true)
+
+if channel_lower
+    label.new(bar_index, high, "Short", color = color.red, size = size.small)
+
+    start := bar_index
+    trigger := true
+    upper := high
+    lower := low
+    channel_color := rsi_color
+    bar_color := rsi_color
+
+    if display_rsi_val
+        label.new(bar_index, hl2, "RSI: " + str.tostring(lower_level), style = label.style_label_right, color = color.new(rsi_color, 100), textcolor = chart.fg_color, force_overlay = true)
+
+
+if bar_index-start >= min_channel_len 
+    trigger := false
+
+
+trigger_change = channel_upper != channel_upper[1] or channel_lower != channel_lower[1]
+
+
+
+//PC 1
+PClength1 = input(9, group = "PC 1")
+offsetlength1 = input(0, group = "PC 1")
+PCColor1 = input.color(defval = color.black, title = "Price Channel 1 Color", group = "PC 1")
+
+highprice1 = ta.highest(high, PClength1)
+lowprice1 = ta.lowest(low, PClength1)
+centerline1 = (ta.highest(high, PClength1) +  ta.lowest(low, PClength1)) / 2
+plot(highprice1, color=PCColor1, title="Highprice Line 1", offset=offsetlength1, linewidth = 4)
+plot(lowprice1, color=PCColor1, title="Lowprice Line 1", offset=offsetlength1, linewidth = 4)
+
+//PC 2
+PClength2 = input(26, group = "PC 2")
+offsetlength2 = input(0, group = "PC 2")
+PCColor2 = input.color(defval = color.gray, title = "Price Channel 2 Color", group = "PC 2")
+
+highprice2 = ta.highest(high, PClength2)
+lowprice2 = ta.lowest(low, PClength2)
+centerline2 = (ta.highest(high, PClength2) +  ta.lowest(low, PClength2)) / 2
+plot(highprice2, color=PCColor2, title="Highprice Line 2", offset=offsetlength1, linewidth = 4)
+plot(lowprice2, color=PCColor2, title="Lowprice Line 2", offset=offsetlength1, linewidth = 4)
+
+//PC 3
+PClength3 = input(52, group = "PC 3")
+offsetlength3 = input(0, group = "PC 3")
+PCColor3 = input.color(defval = color.green, title = "Price Channel 3 Color", group = "PC 3")
+
+highprice3 = ta.highest(high, PClength3)
+lowprice3 = ta.lowest(low, PClength3)
+centerline3 = (ta.highest(high, PClength3) +  ta.lowest(low, PClength3)) / 2
+plot(highprice3, color=PCColor3, title="Highprice Line 3", offset=offsetlength3, linewidth = 4)
+plot(lowprice3, color=PCColor3, title="Lowprice Line 3", offset=offsetlength3, linewidth = 4)
+
+
+
+
+[BBmiddle, BBupper, BBlower] = ta.bb(close, 5, 4)
+plot(BBmiddle, color=color.rgb(96, 212, 50))
+plot(BBupper, color=color.rgb(59, 95, 255))
+plot(BBlower, color=color.rgb(59, 95, 255))
